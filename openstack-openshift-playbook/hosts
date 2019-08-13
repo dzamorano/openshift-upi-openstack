@@ -4,10 +4,10 @@
 api flavor=b2.large ignfile=empty.ign image=RHEL7.5 floating_ip=true fixed_ip=10.0.0.230 ansible_connection=local ansible_python_interpreter="{{ ansible_playbook_python }}"
 
 [openshift]
-bootstrap flavor=b1.tiny ignfile=bootstrap-append.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.231 ansible_connection=local
-master-0 flavor=b1.tiny ignfile=master.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.235 ansible_connection=local
-master-1 flavor=b1.tiny ignfile=master.ign image=CoreOS fixed_ip=10.0.0.236 ansible_connection=local
-master-2 flavor=b1.tiny ignfile=master.ign image=CoreOS fixed_ip=10.0.0.237 ansible_connection=local
+bootstrap flavor=b2.large ignfile=bootstrap-append.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.231 ansible_connection=local
+master-0 flavor=b2.large ignfile=master.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.235 ansible_connection=local
+master-1 flavor=b2.large ignfile=master.ign image=CoreOS fixed_ip=10.0.0.236 ansible_connection=local
+master-2 flavor=b2.large ignfile=master.ign image=CoreOS fixed_ip=10.0.0.237 ansible_connection=local
 worker-0 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.240 ansible_connection=local
 worker-1 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.241 ansible_connection=local
 worker-2 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.242 ansible_connection=local

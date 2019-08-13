@@ -1,0 +1,32 @@
+auth_url: ""
+user_domain: ""
+project_domain: ""
+region: ""
+auth_api: ""
+osp_cacert: ""
+project: ""
+ospuser: ""
+osppassword: ""
+email: address@adminuser.com
+ssh_key: "../id_rsa.pub"
+master_flavor_name: ""
+worker_flavor_name: ""
+coreos_image_name: CoreOS
+apiserver_flavor: RHEL7.5
+network_name: public_net
+subnet_name: public_subnet
+subnet: 10.0.0
+cidr: /24
+external_network: ""
+
+ocp_from_version: "4.1.7"
+ocp_from_release: "quay.io/openshift-release-dev/ocp-release"
+registry_username: registry
+registry_password: registry
+oc_client: "https://artifacts-openshift-release-4-1.svc.ci.openshift.org/zips/openshift-origin-client-tools-v4.1.0-32ec299-211-linux-64bit.tar.gz"
+
+
+# parent_proxy_user:
+# parent_proxy_pass:
+# parent_proxy_host:
+# parent_proxy_port:

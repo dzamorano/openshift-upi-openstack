@@ -1,0 +1,6 @@
+---
+# file: preflight
+- hosts: openstack
+  gather_facts: false
+  roles:
+    - preflight

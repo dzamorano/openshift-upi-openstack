@@ -1,0 +1,24 @@
+# User for the apiserver instance
+user: ""
+
+# forward domain for the cluster
+fwd_domain: dzamoran.ocp-osp.lab
+
+# reverse domain for the cluster
+rev_domain: 0.0.10.in-addr.arpa
+
+# wildcard domain for the cluster
+wild_domain: apps.dzamoran.ocp-osp.lab
+
+# forwarder to access the internet for your private DNS server
+forward_dns: ""
+
+# update the /etc/hosts file for cli and console resolution
+update_hosts: true
+
+# run the role to wait for bootstrap and the install to complete
+wait_for_complete: true
+
+# Extra ssh options
+ssh_rsa_instance: ../id_rsa"
+extra_ssh_options: '-i {{ ssh_rsa_instance }} -o StrictHostKeyChecking=no'

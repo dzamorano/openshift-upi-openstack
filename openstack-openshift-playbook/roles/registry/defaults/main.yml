@@ -1,0 +1,5 @@
+cert_country: "ES"
+cert_state: "Madrid"
+cert_organization: "PaaS"
+cert_commonname: "registry.{{ fwd_domain }}"
+ssl_dir: "/opt/ssl"

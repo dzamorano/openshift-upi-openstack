@@ -1,0 +1,150 @@
+---
+- name: Install required docker and openssl
+  yum:
+    use_backend: yum
+    name:
+      - openssl
+      - docker
+      - httpd-tools
+      - python-docker-py
+    state: present
+
+- name: Create required directories for docker registry container
+  file:
+    path: "/opt/docker/containers/docker-registry/{{ item }}"
+    state: directory
+  with_items:
+    - certs
+    - auth
+    - registry
+
+- name: Create directory for SSL
+  become: true
+  copy:
+    src: ../ssl
+    dest: /opt/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: "set CERT_SUBJECT var"
+  set_fact:
+    cert_subject: '/C={{ cert_country }}/ST={{ cert_state }}/O={{ cert_organization }}/CN={{ cert_commonname }}'
+
+- name: "Create internal registry certificate"
+  shell: "{{ item }}"
+  args:
+    chdir: "{{ ssl_dir }}"
+  with_items:
+  - "openssl genrsa -out registry.key 2048"
+  - "openssl req -new -sha256 -key registry.key -subj \"{{ cert_subject }}\" -out registry.csr"
+  - "openssl x509 -req -in registry.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out registry.crt -days 500 -sha256"
+
+- name: "Create internal registry certificate"
+  shell: "{{ item }}"
+  args:
+    chdir: "{{ ssl_dir }}"
+  with_items:
+  - "htpasswd -Bbn {{ registry_username }} {{ registry_password }} > /opt/docker/containers/docker-registry/auth/htpasswd"
+
+- name: Copy registry certs
+  copy:
+    src: "{{ ssl_dir }}/{{item}}"
+    dest: /opt/docker/containers/docker-registry/certs
+    remote_src: yes
+  with_items:
+  - "registry.key"
+  - "registry.crt"
+
+- name: Enable and start docker daemon
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: docker
+
+- name: Restart a container
+  docker_container:
+    name: docker-registry
+    image: registry
+    state: started
+    restart: yes
+    restart_policy: always
+    volumes:
+     - "/opt/docker/containers/docker-registry/registry:/var/lib/registry:Z"
+     - "/opt/docker/containers/docker-registry/auth:/auth"
+     - "/opt/docker/containers/docker-registry/certs:/certs"
+    ports:
+     - "5000:5000"
+    env:
+        REGISTRY_AUTH: htpasswd
+        REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+        REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+        REGISTRY_HTTP_TLS_CERTIFICATE: /certs/registry.crt
+        REGISTRY_HTTP_TLS_KEY: /certs/registry.key
+
+- name: Copy rootCA to ca-trust directory
+  copy:
+    src: "../ssl/rootCA.crt"
+    dest: /etc/pki/ca-trust/source/anchors/rootCA.crt
+    # remote_src: yes
+
+- name: Update CAs trusted
+  become: true
+  shell: update-ca-trust
+
+- name: Download oc client tgz
+  become: true
+  get_url:
+    url: "{{ oc_client }}"
+    dest: /usr/bin/
+  register: tgz
+
+- name: Extract oc binary from tgz
+  unarchive:
+    src: "{{ tgz.dest }}"
+    dest: /usr/bin
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Ensure /root/.docker directory exist
+  become: true
+  file:
+    path: "/root/.docker"
+    state: directory
+    owner: root
+    group: root
+    mode: '700'
+
+- name: Upload redhat registry auth file
+  become: true
+  copy:
+    src: ../files/docker_config.json
+    dest: "/root/.docker/config.json"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: "add hostname to /etc/hosts"
+  become: true
+  lineinfile:
+    dest: /etc/hosts
+    line: '127.0.1.1    registry.{{ fwd_domain }}'
+    regexp: '^127\.0\.1\.1'
+    insertafter: '^127\.0\.0\.1'
+    state: present
+
+- name: "Add custom registry credentials to docker daemon"
+  become: true
+  shell: "docker login -u {{ registry_username }} -p {{ registry_password }} registry.{{ fwd_domain }}:5000"
+
+- name: Mirror al required images
+  become: true
+  environment:
+    # https_proxy: http://{{ parent_proxy_user }}:{{ parent_proxy_pass }}@{{ parent_proxy_host }}:{{ parent_proxy_port }}
+    no_proxy: ".{{ fwd_domain }}"
+  shell: "{{ item }}"
+  with_items:
+  - "/usr/bin/oc adm release new --registry-config=${HOME}/.docker/config.json --from-release={{ ocp_from_release }}:{{ ocp_from_version }} --insecure --mirror=registry.{{ fwd_domain }}:5000/ocp4/ocp-release --to-image=registry.{{ fwd_domain }}:5000/ocp4/ocp-release:{{ ocp_from_version }}"
+  register: mirror_result
+  failed_when: "'Success' not in mirror_result.stdout"

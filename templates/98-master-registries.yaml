@@ -1,0 +1,55 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 98-master-registries
+spec:
+  config:
+    ignition:
+      config: {}
+      security:
+        tls: {}
+      timeouts: {}
+      version: 2.2.0
+    networkd: {}
+    passwd: {}
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf;base64,###YOUR_CUSTOM_CA###
+        filesystem: root
+        mode: 0644
+        path: /etc/pki/ca-trust/source/anchors/customCA.crt
+      - contents:
+          source: data:text/plain;charset=utf;base64,###YOUR_CUSTOM_REGISTRIES###
+        filesystem: root
+        mode: 0644
+        path: /etc/containers/registries.conf
+      - contents:
+          source: data:text/plain;charset=utf;base64,W21haW5dCmRucz1ub25lCg==
+        filesystem: root
+        mode: 0644
+        path: /etc/NetworkManager/NetworkManager.conf
+      - contents:
+          source: data:text/plain;charset=utf;base64,###YOUR_CUSTOM_RESOLV###
+        filesystem: root
+        mode: 0644
+        path: /etc/resolv.conf
+    systemd:
+      units:
+      - contents: |
+          [Unit]
+          Description=Update system CA
+          After=syslog.target network.target
+
+          [Service]
+          ExecStart=/usr/bin/update-ca-trust
+
+          [Install]
+          WantedBy=multi-user.target
+        enabled: true
+        name: update-ca.service
+  osImageURL: ""

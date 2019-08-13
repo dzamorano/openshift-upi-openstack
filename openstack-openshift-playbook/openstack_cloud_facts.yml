@@ -1,0 +1,20 @@
+---
+# file: openstack_cloud_facts.yml
+- hosts: all
+  gather_facts: no
+  vars_files:
+    - "group_vars/openstack"
+  tasks:
+  - name: OSP Project Credentials
+    set_fact:
+      os_project:
+        auth:
+          auth_url: "{{ auth_url }}"
+          username: "{{ ospuser }}"
+          password: "{{ osppassword }}"
+          project_name: "{{ project }}"
+          project_domain_name: "{{ project_domain }}"
+          user_domain_name: "{{ user_domain }}"
+        auth_type: password
+        region_name: "{{ region }}"
+        cacert: "{{ osp_cacert }}"

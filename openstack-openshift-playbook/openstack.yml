@@ -1,0 +1,7 @@
+---
+# file: openstack.yml
+- import_playbook: openstack_cloud_facts.yml
+- hosts: openstack
+  gather_facts: false
+  roles:
+    - openstack

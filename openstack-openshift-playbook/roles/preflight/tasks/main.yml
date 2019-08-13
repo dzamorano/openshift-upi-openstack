@@ -1,0 +1,45 @@
+---
+- name: Generate resolv.conf file for all instances
+  shell: "echo nameserver {{ hostvars['api'].fixed_ip }} > ../files/resolv.conf"
+
+- name: Generate registries.conf file
+  local_action:
+    module: template
+    src: registries.conf.j2
+    dest: ../files/registries.conf
+
+- name: Install docker
+  yum:
+    name: docker
+    state: present
+
+- name: Login into the custom registry
+  become: true
+  shell: docker login -u {{ registry_username }} -p {{ registry_password }} registry.{{ fwd_domain }}:5000
+
+- name: Download oc client tgz
+  become: true
+  get_url:
+    url: "{{ oc_client }}"
+    dest: /usr/bin/
+  register: tgz
+
+- name: Extract openshift-install from custom registry
+  become: true
+  shell: "oc adm -a ${HOME}/.docker/config.json release extract --command openshift-install --from=registry.{{ fwd_domain }}:5000/ocp4/ocp-release:{{ ocp_from_version }} --to=../"
+
+- name: Create fresh ignition configs
+  shell: "{{ playbook_dir }}/../create-ignition-configs.sh >/dev/null 2>&1"
+  args:
+    chdir: "{{ playbook_dir }}/../"
+  register: ignition
+
+- name: Create directory for kubeconfig
+  file:
+    path: "~/.kube"
+    state: directory
+
+- name: copy the kubeconfig into .kube
+  copy:
+    src: "{{ playbook_dir }}/../installer/auth/kubeconfig"
+    dest: ~/.kube/config

@@ -1,0 +1,13 @@
+---
+# file: roles/uninstall/tasks/main.yml
+- name: Delete all instances
+  os_server:
+     state: absent
+     cloud: "{{ os_project }}"
+     name: "{{ inventory_hostname }}"
+     delete_fip: yes
+- name: Delete all port allocations
+  os_port:
+     state: absent
+     cloud: "{{ os_project }}"
+     name: "{{ inventory_hostname }}"

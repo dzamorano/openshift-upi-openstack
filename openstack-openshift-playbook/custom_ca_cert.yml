@@ -1,0 +1,6 @@
+---
+# file: custom_ca_cert.yml
+- hosts: openstack
+  gather_facts: false
+  roles:
+    - custom_ca_cert

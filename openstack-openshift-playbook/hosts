@@ -1,0 +1,30 @@
+[utility]
+
+[apiserver]
+api flavor=b2.large ignfile=empty.ign image=RHEL7.5 floating_ip=true fixed_ip=10.0.0.230 ansible_connection=local ansible_python_interpreter="{{ ansible_playbook_python }}"
+
+[openshift]
+bootstrap flavor=b1.tiny ignfile=bootstrap-append.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.231 ansible_connection=local
+master-0 flavor=b1.tiny ignfile=master.ign image=CoreOS floating_ip=true fixed_ip=10.0.0.235 ansible_connection=local
+master-1 flavor=b1.tiny ignfile=master.ign image=CoreOS fixed_ip=10.0.0.236 ansible_connection=local
+master-2 flavor=b1.tiny ignfile=master.ign image=CoreOS fixed_ip=10.0.0.237 ansible_connection=local
+worker-0 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.240 ansible_connection=local
+worker-1 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.241 ansible_connection=local
+worker-2 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.242 ansible_connection=local
+worker-3 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.243 ansible_connection=local
+worker-4 flavor=b2.large ignfile=worker.ign image=CoreOS fixed_ip=10.0.0.244 ansible_connection=local
+
+[openstack]
+localhost ansible_connection=local ansible_python_interpreter="{{ ansible_playbook_python }}"
+
+[uninstall:children]
+apiserver
+openshift
+
+[uninstall:vars]
+ansible_python_interpreter="{{ ansible_playbook_python }}"
+
+[all:vars]
+ansible_ssh_private_key_file="../id_rsa"
+ansible_ssh_user=cloud-user
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

@@ -1,6 +1,6 @@
 This is a fork from https://github.com/mrobson/openstackupi-openshift
 
-OpenShift 4.1: Fully Automated UPI on OpenStack
+OpenShift 4.1: Fully Automated UPI on OpenStack tenant without direct internet access
 ===============================================
 
 Technologies: OpenShift 4.1, OpenStack, Ansible
